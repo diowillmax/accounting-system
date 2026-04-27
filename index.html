@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>会计管理系统</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f2f5;
+  --bg2: #ffffff;
+  --bg3: #f5f7fa;
+  --bg4: #eceef2;
+  --border: rgba(0,0,0,0.07);
+  --border2: rgba(0,0,0,0.12);
+  --text: #1a1f2e;
+  --text2: #4b5368;
+  --text3: #8b93a8;
+  --accent: #0a7c5c;
+  --accent2: #0d9e76;
+  --accent-glow: rgba(10,124,92,0.10);
+  --blue: #2563eb;
+  --blue-dim: rgba(37,99,235,0.10);
+  --amber: #d97706;
+  --amber-dim: rgba(217,119,6,0.10);
+  --red: #dc2626;
+  --red-dim: rgba(220,38,38,0.08);
+  --green: #0a7c5c;
+  --green-dim: rgba(10,124,92,0.08);
+  --purple: #7c3aed;
+  --sidebar-w: 210px;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --font: 'Noto Sans SC', sans-serif;
+  --font-mono: Calibri, Arial, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── LAYOUT ── */
+.app { display: flex; height: 100vh; position: relative; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+
+.logo {
+  padding: 20px 16px 18px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: var(--bg2);
+  z-index: 2;
+}
+
+.logo-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--accent), #34d399);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.logo-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text);
+}
+
+.logo-sub {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 3px;
+  letter-spacing: 0.3px;
+}
+
+.nav-section {
+  padding: 18px 16px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: var(--text3);
+  text-transform: uppercase;
+}
+
+.nav-item {
+  margin: 1px 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  transition: all .15s;
+  position: relative;
+}
+
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+
+.nav-item.active {
+  background: rgba(10,124,92,0.10);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; height: 60%;
+  width: 2.5px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+  margin-left: -8px;
+}
+
+.nav-icon { width: 16px; text-align: center; font-size: 13px; opacity: .8; }
+
+/* ── MAIN ── */
+.main { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.topbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.3px;
+}
+
+.period-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.period-label {
+  font-size: 11px;
+  color: var(--text3);
+  white-space: nowrap;
+}
+
+.period-bar select {
+  padding: 5px 10px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  background: var(--bg3);
+  color: var(--text);
+  cursor: pointer;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color .15s;
+}
+.period-bar select:focus { border-color: var(--accent); }
+
+/* ── CONTENT ── */
+.content { flex: 1; overflow-y: auto; padding: 24px; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── METRICS ── */
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+
+.metric {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s, transform .2s;
+}
+.metric:hover { border-color: #d0d5e0; transform: translateY(-1px); }
+
+.metric::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.metric.blue::after { background: var(--blue); }
+.metric.amber::after { background: var(--amber); }
+.metric.green::after { background: var(--accent); }
+.metric.default::after { background: var(--purple); }
+
+.metric-label { font-size: 11px; color: var(--text3); margin-bottom: 8px; letter-spacing: 0.3px; }
+.metric-value { font-size: 26px; font-weight: 600; letter-spacing: -0.5px; }
+.metric-value.blue { color: var(--blue); }
+.metric-value.amber { color: var(--amber); }
+.metric-value.green { color: var(--accent); }
+.metric-value.default { color: var(--purple); }
+
+/* ── CARD ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 7px 14px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--bg3);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text2);
+  transition: all .15s;
+  font-family: var(--font);
+  white-space: nowrap;
+}
+.btn:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+
+.btn-primary {
+  background: linear-gradient(135deg, #0a7c5c, #0d9e76);
+  color: #fff;
+  border-color: transparent;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(10,124,92,0.25);
+}
+.btn-primary:hover { background: linear-gradient(135deg, #085e46, #0a7c5c); box-shadow: 0 4px 12px rgba(10,124,92,0.35); }
+
+.btn-sm { padding: 5px 10px; font-size: 11.5px; }
+
+.btn-danger {
+  background: var(--red-dim);
+  color: var(--red);
+  border-color: rgba(248,113,113,0.2);
+}
+.btn-danger:hover { background: rgba(248,113,113,0.2); }
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border);
+}
+.btn-ghost:hover { background: var(--bg3); }
+
+/* ── TABLES ── */
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+
+th {
+  background: var(--bg3);
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.badge-success { background: var(--green-dim); color: var(--accent); }
+.badge-warning { background: var(--amber-dim); color: var(--amber); }
+.badge-danger { background: var(--red-dim); color: var(--red); }
+
+/* ── FORMS ── */
+.form-row { display: grid; gap: 12px; margin-bottom: 12px; }
+.form-row.cols2 { grid-template-columns: 1fr 1fr; }
+.form-row.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.form-group label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text3);
+  margin-bottom: 5px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 11px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--bg3);
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.form-group input[readonly] { background: var(--bg4); color: var(--text3); cursor: default; }
+
+/* ── VOUCHER LINES ── */
+.vl-header {
+  display: grid;
+  grid-template-columns: 36px 1fr 170px 120px 120px 60px;
+  background: var(--bg3);
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+.vl-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 170px 120px 120px 60px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  gap: 4px;
+  transition: background .1s;
+}
+.vl-row:hover { background: rgba(255,255,255,0.02); }
+
+.vl-row input,
+.vl-row select {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 12px;
+  width: 100%;
+  background: var(--bg3);
+  color: var(--text);
+  font-family: var(--font);
+  outline: none;
+  transition: border-color .15s;
+}
+.vl-row input:focus,
+.vl-row select:focus { border-color: var(--accent); }
+.vl-row input[type=number] { text-align: right; font-family: var(--font-mono); }
+
+.vl-total {
+  display: grid;
+  grid-template-columns: 36px 1fr 170px 120px 120px 60px;
+  padding: 9px 12px;
+  background: var(--bg3);
+  border-top: 1px solid var(--border2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.vl-seq { font-family: var(--font-mono); font-size: 11px; color: var(--text3); }
+
+/* ── TABS ── */
+.tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 16px; gap: 4px; }
+
+.tab {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--text3);
+  border-bottom: 2px solid transparent;
+  transition: all .15s;
+  margin-bottom: -1px;
+}
+.tab:hover { color: var(--text2); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+
+/* ── REPORT ── */
+.report-table td:first-child { color: var(--text2); }
+.report-section-header td {
+  font-weight: 600 !important;
+  background: var(--bg3) !important;
+  color: var(--text) !important;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+}
+.report-total td {
+  font-weight: 600;
+  color: var(--text) !important;
+  border-top: 1px solid var(--border2);
+  background: rgba(110,231,183,0.04) !important;
+}
+.text-right { text-align: right; font-family: var(--font-mono); font-size: 14px; }
+.text-center { text-align: center; }
+
+/* ── TAGS ── */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.tag-dr { background: var(--blue-dim); color: var(--blue); }
+.tag-cr { background: var(--green-dim); color: var(--accent); }
+
+/* ── ACCT CODE ── */
+.acct-code { font-family: var(--font-mono); font-size: 14px; color: var(--text3); }
+
+/* ── REPORT BAR ── */
+.report-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text3);
+  font-size: 13px;
+}
+
+/* ── MODAL ── */
+.modal-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 100;
+  padding-top: 60px;
+}
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 22px;
+  width: 560px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  animation: modalIn .2s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(-12px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text);
+}
+
+.close-btn {
+  cursor: pointer;
+  color: var(--text3);
+  font-size: 18px;
+  line-height: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 8px;
+  transition: all .15s;
+}
+.close-btn:hover { color: var(--text); border-color: var(--border2); }
+
+/* ── TOAST ── */
+.toast {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  background: #1a1f2e;
+  border: 1px solid rgba(0,0,0,0.2);
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  z-index: 999;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .25s, transform .25s;
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+/* ── SECTION DIVIDER LINE ── */
+.section-line {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+/* ── VOUCHER CONTAINER ── */
+.voucher-lines-container {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 14px;
+  background: var(--bg2);
+}
+
+/* ── FISCAL YEAR TAG ── */
+.fy-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--blue-dim);
+  color: var(--blue);
+}
+
+/* ── RADIO ── */
+.radio-group { display: flex; flex-direction: column; gap: 10px; }
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text2);
+  transition: color .15s;
+}
+.radio-label:hover { color: var(--text); }
+.radio-label input[type=radio] { accent-color: var(--accent); }
+
+/* ── DASHBOARD RECENT ── */
+.dash-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.dash-period-badge {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: var(--text3);
+}
+
+/* ANIMATIONS */
+.panel.active { animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Scrollbar in modal */
+.modal::-webkit-scrollbar { width: 3px; }
+.modal::-webkit-scrollbar-thumb { background: var(--border2); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="app" id="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">📒</div>
+    <div class="logo-title">会计管理系统</div>
+    <div class="logo-sub" id="std-display">企业会计准则</div>
+  </div>
+
+  <div class="nav-section">日常账务</div>
+  <div class="nav-item active" data-panel="dashboard"><span class="nav-icon">◈</span> 首页概览</div>
+  <div class="nav-item" data-panel="voucher"><span class="nav-icon">✦</span> 凭证录入</div>
+  <div class="nav-item" data-panel="voucher-list"><span class="nav-icon">⊞</span> 凭证列表</div>
+  <div class="nav-item" data-panel="accounts"><span class="nav-icon">◉</span> 科目管理</div>
+
+  <div class="nav-section">期末处理</div>
+  <div class="nav-item" data-panel="carry-forward"><span class="nav-icon">⟳</span> 自动结转</div>
+
+  <div class="nav-section">财务报表</div>
+  <div class="nav-item" data-panel="balance-sheet"><span class="nav-icon">▤</span> 资产负债表</div>
+  <div class="nav-item" data-panel="income-stmt"><span class="nav-icon">▲</span> 利润表</div>
+  <div class="nav-item" data-panel="cash-flow"><span class="nav-icon">◎</span> 现金流量表</div>
+  <div class="nav-item" data-panel="expense-compare"><span class="nav-icon">≋</span> 费用比对</div>
+
+  <div class="nav-section">系统</div>
+  <div class="nav-item" data-panel="settings"><span class="nav-icon">⚙</span> 系统设置</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">首页概览</div>
+    <div class="period-bar">
+      <span class="period-label">当前期间</span>
+      <select id="current-year" onchange="updatePeriod()"></select>
+      <select id="current-month" onchange="updatePeriod()">
+        <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+        <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+        <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="content" id="content">
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="metrics">
+        <div class="metric blue">
+          <div class="metric-label">本月收入</div>
+          <div class="metric-value blue" id="dash-revenue">¥0</div>
+        </div>
+        <div class="metric amber">
+          <div class="metric-label">本月支出</div>
+          <div class="metric-value amber" id="dash-expense">¥0</div>
+        </div>
+        <div class="metric green">
+          <div class="metric-label">本月净利润</div>
+          <div class="metric-value green" id="dash-profit">¥0</div>
+        </div>
+        <div class="metric default">
+          <div class="metric-label">本月凭证数</div>
+          <div class="metric-value default" id="dash-vouchers">0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>最近凭证</span>
+          <button class="btn btn-sm btn-ghost" onclick="showPanel('voucher')">+ 新建凭证</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>凭证编号</th>
+              <th>日期</th>
+              <th>摘要</th>
+              <th class="text-right">借方合计</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody id="dash-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VOUCHER ENTRY -->
+    <div class="panel" id="panel-voucher">
+      <div class="card">
+        <div class="card-title">新建记账凭证</div>
+        <div class="form-row cols3">
+          <div class="form-group">
+            <label>凭证字</label>
+            <select id="v-type"><option>记</option><option>收</option><option>付</option><option>转</option></select>
+          </div>
+          <div class="form-group">
+            <label>凭证编号</label>
+            <input id="v-no" readonly>
+          </div>
+          <div class="form-group">
+            <label>凭证日期</label>
+            <input type="date" id="v-date">
+          </div>
+        </div>
+        <div class="form-row" style="grid-template-columns:100px 1fr">
+          <div class="form-group">
+            <label>附件张数</label>
+            <input type="number" id="v-attach" value="0" min="0">
+          </div>
+        </div>
+
+        <div style="font-size:12px;font-weight:600;margin-bottom:10px;margin-top:4px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase">分录明细</div>
+        <div class="voucher-lines-container">
+          <div class="vl-header">
+            <span>序</span><span>摘要</span><span>会计科目</span><span style="text-align:right">借方金额</span><span style="text-align:right">贷方金额</span><span></span>
+          </div>
+          <div id="vl-body"></div>
+          <div class="vl-total">
+            <span></span>
+            <span style="color:var(--text3)">合计</span>
+            <span></span>
+            <span id="vl-dr-total" style="text-align:right;font-family:var(--font-mono)">0.00</span>
+            <span id="vl-cr-total" style="text-align:right;font-family:var(--font-mono)">0.00</span>
+            <span></span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+          <button class="btn btn-sm btn-ghost" onclick="addVoucherLine()">+ 添加行</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="clearVoucher()">清空</button>
+            <button class="btn btn-primary" onclick="saveVoucher()">保存凭证</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VOUCHER LIST -->
+    <div class="panel" id="panel-voucher-list">
+      <div class="card">
+        <div class="card-title">
+          <span>凭证列表</span>
+          <button class="btn btn-sm btn-primary" onclick="showPanel('voucher')">+ 新建凭证</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>凭证编号</th><th>日期</th><th>摘要</th>
+              <th class="text-right">借方合计</th><th class="text-right">贷方合计</th>
+              <th>制单人</th><th>状态</th><th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="vlist-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACCOUNTS -->
+    <div class="panel" id="panel-accounts">
+      <div class="card">
+        <div class="card-title">
+          <span>科目管理</span>
+          <button class="btn btn-sm btn-primary" onclick="showAddAccountModal()">+ 新增科目</button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>科目编码</th><th>科目名称</th><th>类别</th><th>余额方向</th><th>操作</th></tr>
+          </thead>
+          <tbody id="acct-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CARRY FORWARD -->
+    <div class="panel" id="panel-carry-forward">
+      <div class="card">
+        <div class="card-title">期末自动结转</div>
+        <p style="font-size:12.5px;color:var(--text3);margin-bottom:16px;line-height:1.7">将本期损益科目余额结转至「本年利润」，结转后损益科目余额归零。</p>
+        <div id="cf-items"></div>
+        <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" onclick="previewCarryForward()">预览结转</button>
+          <button class="btn btn-primary" onclick="execCarryForward()">执行结转</button>
+        </div>
+      </div>
+      <div class="card" id="cf-preview-card" style="display:none">
+        <div class="card-title">结转预览</div>
+        <table>
+          <thead><tr><th>摘要</th><th>科目</th><th class="text-right">借方</th><th class="text-right">贷方</th></tr></thead>
+          <tbody id="cf-preview-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BALANCE SHEET -->
+    <div class="panel" id="panel-balance-sheet">
+      <div class="report-bar">
+        <div class="tabs" style="margin-bottom:0;border:none">
+          <div class="tab active" onclick="switchRptTab(this,'bs-period','month')">月报</div>
+          <div class="tab" onclick="switchRptTab(this,'bs-period','quarter')">季报</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="bs-year" class="period-bar" style="padding:5px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:var(--font);outline:none"></select>
+          <select id="bs-period" class="period-bar" style="padding:5px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:var(--font);outline:none"></select>
+          <button class="btn btn-sm" onclick="renderBalanceSheet()">生成</button>
+          <button class="btn btn-sm btn-ghost" onclick="exportCSV('balance-sheet')">导出 CSV</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="text-align:center;margin-bottom:16px">
+          <div style="font-size:16px;font-weight:600;color:var(--text)">资产负债表</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px" id="bs-subtitle"></div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>资产</th><th class="text-right">期末余额</th><th class="text-right">年初余额</th>
+                <th>负债和所有者权益</th><th class="text-right">期末余额</th><th class="text-right">年初余额</th>
+              </tr>
+            </thead>
+            <tbody id="bs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- INCOME STATEMENT -->
+    <div class="panel" id="panel-income-stmt">
+      <div class="report-bar">
+        <div class="tabs" style="margin-bottom:0;border:none">
+          <div class="tab active" onclick="switchRptTab(this,'is-period','month')">月报</div>
+          <div class="tab" onclick="switchRptTab(this,'is-period','quarter')">季报</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="is-year" style="padding:5px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:var(--font);outline:none"></select>
+          <select id="is-period" style="padding:5px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:var(--font);outline:none"></select>
+          <button class="btn btn-sm" onclick="renderIncomeStmt()">生成</button>
+          <button class="btn btn-sm btn-ghost" onclick="exportCSV('income-stmt')">导出 CSV</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="text-align:center;margin-bottom:16px">
+          <div style="font-size:16px;font-weight:600;color:var(--text)">利润表</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px" id="is-subtitle"></div>
+        </div>
+        <table class="report-table">
+          <thead><tr><th>项目</th><th class="text-center">行次</th><th class="text-right">本期金额</th><th class="text-right">本年累计</th></tr></thead>
+          <tbody id="is-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CASH FLOW -->
+    <div class="panel" id="panel-cash-flow">
+      <div class="report-bar">
+        <div class="tabs" style="margin-bottom:0;border:none">
+          <div class="tab active" onclick="switchRptTab(this,'cfr-period','month')">月报</div>
+          <div class="tab" onclick="switchRptTab(this,'cfr-period','quarter')">季报</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="cfr-year" style="padding:5px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:var(--font);outline:none"></select>
+          <select id="cfr-period" style="padding:5px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:var(--font);outline:none"></select>
+          <button class="btn btn-sm" onclick="renderCashFlow()">生成</button>
+          <button class="btn btn-sm btn-ghost" onclick="exportCSV('cash-flow')">导出 CSV</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="text-align:center;margin-bottom:16px">
+          <div style="font-size:16px;font-weight:600;color:var(--text)">现金流量表</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px" id="cfr-subtitle"></div>
+        </div>
+        <table class="report-table">
+          <thead><tr><th>项目</th><th class="text-center">行次</th><th class="text-right">本期金额</th><th class="text-right">上期金额</th></tr></thead>
+          <tbody id="cfr-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EXPENSE COMPARISON -->
+    <div class="panel" id="panel-expense-compare">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:12px;color:var(--text3)">年度</span>
+          <select id="ec-year" style="padding:5px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--bg2);color:var(--text);font-family:var(--font);outline:none"></select>
+          <button class="btn btn-sm btn-primary" onclick="renderExpenseCompare()">生成</button>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm" id="ec-view-bar" onclick="setEcView('bar')" style="background:var(--accent);color:#fff;border-color:transparent">柱状图</button>
+          <button class="btn btn-sm" id="ec-view-line" onclick="setEcView('line')">折线图</button>
+        </div>
+      </div>
+      <div id="ec-kpi-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px"></div>
+      <div class="card" style="padding:20px 20px 16px">
+        <div class="card-title" id="ec-chart-title">各月费用趋势</div>
+        <div style="position:relative;height:260px"><canvas id="ec-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>月度费用明细对比</span><span style="font-size:11px;font-weight:400;color:var(--text3)">单位：元</span></div>
+        <div style="overflow-x:auto"><table id="ec-table"><thead id="ec-thead"></thead><tbody id="ec-tbody"></tbody><tfoot id="ec-tfoot"></tfoot></table></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panel-settings">
+      <div class="card">
+        <div class="card-title">系统设置</div>
+
+        <div style="margin-bottom:22px">
+          <div style="font-size:11px;font-weight:600;margin-bottom:12px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase">会计准则</div>
+          <div class="radio-group">
+            <label class="radio-label"><input type="radio" name="std" value="gaap" id="std-gaap" onchange="changeStandard()"> 企业会计准则（大中型企业）</label>
+            <label class="radio-label"><input type="radio" name="std" value="small" id="std-small" onchange="changeStandard()"> 小企业会计准则（小微企业）</label>
+          </div>
+        </div>
+
+        <hr class="section-line">
+
+        <div style="margin-bottom:22px">
+          <div style="font-size:11px;font-weight:600;margin-bottom:12px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase">企业信息</div>
+          <div class="form-row cols2">
+            <div class="form-group"><label>企业名称</label><input id="company-name" value="示例企业"></div>
+            <div class="form-group"><label>纳税人识别号</label><input id="tax-no" placeholder="请输入税号"></div>
+          </div>
+        </div>
+
+        <hr class="section-line">
+
+        <div style="margin-bottom:22px">
+          <div style="font-size:11px;font-weight:600;margin-bottom:12px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase">账套年度管理</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--text3)">已开账年度：</span>
+            <div id="fiscal-years-list" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            <select id="new-fiscal-year" style="padding:5px 10px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--bg3);color:var(--text);font-family:var(--font);outline:none"></select>
+            <button class="btn btn-sm btn-primary" onclick="addFiscalYear()">+ 开账</button>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px">
+          <button class="btn btn-danger btn-sm" onclick="clearAllData()">清空所有数据</button>
+          <button class="btn btn-primary" onclick="saveSettings()">保存设置</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"><span class="toast-dot"></span><span id="toast-text"></span></div>
+
+<script>
+const SK = 'acct_v3';
+
+const DEFSTATE = {
+  standard:'gaap',
+  company:'示例企业',
+  taxNo:'',
+  period:{year:2026,month:1},
+  voucherSeq:{},
+  vouchers:[],
+  accounts:[],
+  fiscalYears:[2026]
+};
+
+let S = loadState();
+
+function loadState(){
+  try{ const ls=localStorage.getItem(SK); if(ls) return JSON.parse(ls); }catch(e){}
+  return JSON.parse(JSON.stringify(DEFSTATE));
+}
+
+async function saveState(){
+  try{ localStorage.setItem(SK,JSON.stringify(S)); }catch(e){}
+  try{ if(window.storage) await window.storage.set(SK,JSON.stringify(S)); }catch(e){}
+}
+
+async function trySaveStorage(){
+  try{
+    if(window.storage){
+      const r=await window.storage.get(SK);
+      if(r&&r.value){ const saved=JSON.parse(r.value); if(saved&&saved.vouchers){ S=Object.assign(JSON.parse(JSON.stringify(DEFSTATE)),saved); return true; } }
+    }
+  }catch(e){}
+  return false;
+}
+
+function toast(msg,ms=2500){
+  const t=document.getElementById('toast'); document.getElementById('toast-text').textContent=msg;
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),ms);
+}
+
+function fmt(n){
+  if(n===''||n===null||n===undefined||isNaN(n)) return '';
+  return Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function fmtMoney(n){ return '¥'+Number(n||0).toLocaleString('zh-CN',{minimumFractionDigits:0}); }
+
+const ACCOUNTS_GAAP=[
+  {code:'1001',name:'库存现金',type:'资产',direction:'借'},{code:'1002',name:'银行存款',type:'资产',direction:'借'},
+  {code:'1012',name:'其他货币资金',type:'资产',direction:'借'},{code:'1101',name:'交易性金融资产',type:'资产',direction:'借'},
+  {code:'1122',name:'应收票据',type:'资产',direction:'借'},{code:'1123',name:'应收账款',type:'资产',direction:'借'},
+  {code:'1131',name:'应收股利',type:'资产',direction:'借'},{code:'1221',name:'其他应收款',type:'资产',direction:'借'},
+  {code:'1401',name:'原材料',type:'资产',direction:'借'},{code:'1405',name:'库存商品',type:'资产',direction:'借'},
+  {code:'1511',name:'长期股权投资',type:'资产',direction:'借'},{code:'1601',name:'固定资产',type:'资产',direction:'借'},
+  {code:'1602',name:'累计折旧',type:'资产',direction:'贷'},{code:'1701',name:'无形资产',type:'资产',direction:'借'},
+  {code:'2001',name:'短期借款',type:'负债',direction:'贷'},{code:'2201',name:'应付票据',type:'负债',direction:'贷'},
+  {code:'2202',name:'应付账款',type:'负债',direction:'贷'},{code:'2211',name:'应付职工薪酬',type:'负债',direction:'贷'},
+  {code:'2221',name:'应交税费',type:'负债',direction:'贷'},{code:'2241',name:'其他应付款',type:'负债',direction:'贷'},
+  {code:'2401',name:'长期借款',type:'负债',direction:'贷'},{code:'4001',name:'实收资本',type:'所有者权益',direction:'贷'},
+  {code:'4002',name:'资本公积',type:'所有者权益',direction:'贷'},{code:'4101',name:'盈余公积',type:'所有者权益',direction:'贷'},
+  {code:'4103',name:'本年利润',type:'所有者权益',direction:'贷'},{code:'4104',name:'利润分配',type:'所有者权益',direction:'贷'},
+  {code:'5001',name:'生产成本',type:'成本',direction:'借'},{code:'5101',name:'制造费用',type:'成本',direction:'借'},
+  {code:'6001',name:'主营业务收入',type:'损益',direction:'贷'},{code:'6002',name:'其他业务收入',type:'损益',direction:'贷'},
+  {code:'6101',name:'主营业务成本',type:'损益',direction:'借'},{code:'6102',name:'其他业务成本',type:'损益',direction:'借'},
+  {code:'6201',name:'投资收益',type:'损益',direction:'贷'},{code:'6301',name:'营业外收入',type:'损益',direction:'贷'},
+  {code:'6401',name:'销售费用',type:'损益',direction:'借'},{code:'6402',name:'管理费用',type:'损益',direction:'借'},
+  {code:'6403',name:'财务费用',type:'损益',direction:'借'},{code:'6501',name:'营业外支出',type:'损益',direction:'借'},
+  {code:'6601',name:'所得税费用',type:'损益',direction:'借'},
+];
+const ACCOUNTS_SMALL=[
+  {code:'1001',name:'库存现金',type:'资产',direction:'借'},{code:'1002',name:'银行存款',type:'资产',direction:'借'},
+  {code:'1101',name:'短期投资',type:'资产',direction:'借'},{code:'1201',name:'应收票据',type:'资产',direction:'借'},
+  {code:'1202',name:'应收账款',type:'资产',direction:'借'},{code:'1221',name:'其他应收款',type:'资产',direction:'借'},
+  {code:'1401',name:'存货',type:'资产',direction:'借'},{code:'1501',name:'长期股权投资',type:'资产',direction:'借'},
+  {code:'1601',name:'固定资产',type:'资产',direction:'借'},{code:'1602',name:'累计折旧',type:'资产',direction:'贷'},
+  {code:'1701',name:'无形资产',type:'资产',direction:'借'},{code:'2001',name:'短期借款',type:'负债',direction:'贷'},
+  {code:'2201',name:'应付账款',type:'负债',direction:'贷'},{code:'2241',name:'应付职工薪酬',type:'负债',direction:'贷'},
+  {code:'2251',name:'应交税费',type:'负债',direction:'贷'},{code:'2901',name:'其他流动负债',type:'负债',direction:'贷'},
+  {code:'3001',name:'实收资本',type:'所有者权益',direction:'贷'},{code:'3002',name:'资本公积',type:'所有者权益',direction:'贷'},
+  {code:'3101',name:'盈余公积',type:'所有者权益',direction:'贷'},{code:'3103',name:'本年利润',type:'所有者权益',direction:'贷'},
+  {code:'3104',name:'利润分配',type:'所有者权益',direction:'贷'},{code:'4001',name:'营业收入',type:'损益',direction:'贷'},
+  {code:'4101',name:'营业成本',type:'损益',direction:'借'},{code:'4201',name:'营业税金及附加',type:'损益',direction:'借'},
+  {code:'4301',name:'销售费用',type:'损益',direction:'借'},{code:'4302',name:'管理费用',type:'损益',direction:'借'},
+  {code:'4303',name:'财务费用',type:'损益',direction:'借'},{code:'4401',name:'营业外收入',type:'损益',direction:'贷'},
+  {code:'4402',name:'营业外支出',type:'损益',direction:'借'},{code:'4601',name:'所得税费用',type:'损益',direction:'借'},
+];
+
+function initAccounts(){
+  if(!S.accounts||!S.accounts.length)
+    S.accounts=S.standard==='gaap'?[...ACCOUNTS_GAAP]:[...ACCOUNTS_SMALL];
+}
+
+function buildYearOptions(selId,selected){
+  const sel=document.getElementById(selId); if(!sel) return;
+  const years=S.fiscalYears.slice().sort((a,b)=>b-a);
+  sel.innerHTML=years.map(y=>`<option value="${y}" ${y==selected?'selected':''}>${y}年</option>`).join('');
+}
+
+function buildMonthOptions(selId,selected){
+  const sel=document.getElementById(selId); if(!sel) return;
+  sel.innerHTML=Array.from({length:12},(_,i)=>`<option value="${i+1}" ${i+1==selected?'selected':''}>${i+1}月</option>`).join('');
+}
+
+function buildNewFiscalYearOptions(){
+  const sel=document.getElementById('new-fiscal-year'); if(!sel) return;
+  const maxY=S.fiscalYears.length?Math.max(...S.fiscalYears):new Date().getFullYear();
+  const opts=[];
+  for(let y=maxY+1;y<=maxY+5;y++) opts.push(`<option value="${y}">${y}年</option>`);
+  sel.innerHTML=opts.join('');
+}
+
+function renderFiscalYearsList(){
+  const el=document.getElementById('fiscal-years-list'); if(!el) return;
+  el.innerHTML=S.fiscalYears.slice().sort((a,b)=>a-b).map(y=>`<span class="fy-tag">${y}年</span>`).join('');
+  buildNewFiscalYearOptions();
+}
+
+function addFiscalYear(){
+  const y=parseInt(document.getElementById('new-fiscal-year').value);
+  if(S.fiscalYears.includes(y)){toast('该年度已开账');return;}
+  S.fiscalYears.push(y); S.fiscalYears.sort((a,b)=>a-b);
+  saveState(); renderFiscalYearsList(); refreshAllYearSelects();
+  toast(`${y}年账套开账成功`);
+}
+
+function refreshAllYearSelects(){
+  buildYearOptions('current-year',S.period.year);
+  buildYearOptions('bs-year',S.period.year);
+  buildYearOptions('is-year',S.period.year);
+  buildYearOptions('cfr-year',S.period.year);
+}
+
+function updatePeriod(){
+  S.period.year=parseInt(document.getElementById('current-year').value);
+  S.period.month=parseInt(document.getElementById('current-month').value);
+  saveState(); renderDashboard();
+}
+
+function showPanel(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const panel=document.getElementById('panel-'+name);
+  if(panel) panel.classList.add('active');
+  const nav=document.querySelector(`[data-panel="${name}"]`);
+  if(nav) nav.classList.add('active');
+  const titles={'dashboard':'首页概览','voucher':'凭证录入','voucher-list':'凭证列表','accounts':'科目管理','carry-forward':'自动结转','balance-sheet':'资产负债表','income-stmt':'利润表','cash-flow':'现金流量表','expense-compare':'费用比对','settings':'系统设置'};
+  document.getElementById('topbar-title').textContent=titles[name]||'';
+  const handlers={'dashboard':renderDashboard,'voucher':initVoucher,'voucher-list':renderVoucherList,'accounts':renderAccounts,'carry-forward':renderCarryForward,'balance-sheet':renderBalanceSheet,'income-stmt':renderIncomeStmt,'cash-flow':renderCashFlow,'expense-compare':initExpenseCompare,'settings':()=>{renderFiscalYearsList();refreshAllYearSelects();}};
+  if(handlers[name]) handlers[name]();
+}
+document.querySelectorAll('.nav-item[data-panel]').forEach(el=>el.addEventListener('click',()=>showPanel(el.dataset.panel)));
+
+let voucherLines=[];
+function getVoucherSeqKey(){ return `${S.period.year}-${String(S.period.month).padStart(2,'0')}`; }
+function nextVoucherNo(){
+  const k=getVoucherSeqKey();
+  if(!S.voucherSeq[k]) S.voucherSeq[k]=1;
+  return `记-${k}-${String(S.voucherSeq[k]).padStart(3,'0')}`;
+}
+
+function initVoucher(){
+  voucherLines=[{desc:'',acct:'',dr:'',cr:''},{desc:'',acct:'',dr:'',cr:''}];
+  document.getElementById('v-date').value=`${S.period.year}-${String(S.period.month).padStart(2,'0')}-01`;
+  document.getElementById('v-no').value=nextVoucherNo();
+  renderVoucherLines();
+}
+
+function renderVoucherLines(){
+  const body=document.getElementById('vl-body');
+  const opts=S.accounts.map(a=>`<option value="${a.code}">${a.code} ${a.name}</option>`).join('');
+  body.innerHTML=voucherLines.map((l,i)=>`
+    <div class="vl-row">
+      <span class="vl-seq">${i+1}</span>
+      <input value="${l.desc||''}" placeholder="摘要" oninput="voucherLines[${i}].desc=this.value">
+      <select onchange="voucherLines[${i}].acct=this.value"><option value="">选择科目</option>${opts.replace(`value="${l.acct}"`,`value="${l.acct}" selected`)}</select>
+      <input value="${l.dr||''}" placeholder="0.00" type="number" step="0.01" min="0" oninput="voucherLines[${i}].dr=this.value;updateTotals()" style="text-align:right">
+      <input value="${l.cr||''}" placeholder="0.00" type="number" step="0.01" min="0" oninput="voucherLines[${i}].cr=this.value;updateTotals()" style="text-align:right">
+      <button onclick="removeVoucherLine(${i})" style="padding:3px 8px;font-size:11px;background:var(--red-dim);color:var(--red);border:1px solid rgba(248,113,113,.2);border-radius:4px;cursor:pointer;font-family:var(--font)">删除</button>
+    </div>`).join('');
+  updateTotals();
+}
+
+function addVoucherLine(){ voucherLines.push({desc:'',acct:'',dr:'',cr:''}); renderVoucherLines(); }
+function removeVoucherLine(i){ if(voucherLines.length<=2){toast('至少保留2行');return;} voucherLines.splice(i,1); renderVoucherLines(); }
+
+function updateTotals(){
+  const dr=voucherLines.reduce((s,l)=>s+(parseFloat(l.dr)||0),0);
+  const cr=voucherLines.reduce((s,l)=>s+(parseFloat(l.cr)||0),0);
+  const balanced=Math.abs(dr-cr)<0.01;
+  const dEl=document.getElementById('vl-dr-total'),cEl=document.getElementById('vl-cr-total');
+  dEl.textContent=dr.toFixed(2); cEl.textContent=cr.toFixed(2);
+  const color=balanced?'var(--accent)':'var(--red)';
+  dEl.style.color=color; cEl.style.color=color;
+}
+
+function clearVoucher(){ voucherLines=[{desc:'',acct:'',dr:'',cr:''},{desc:'',acct:'',dr:'',cr:''}]; renderVoucherLines(); }
+
+function saveVoucher(){
+  const dr=voucherLines.reduce((s,l)=>s+(parseFloat(l.dr)||0),0);
+  const cr=voucherLines.reduce((s,l)=>s+(parseFloat(l.cr)||0),0);
+  if(Math.abs(dr-cr)>0.01){toast('借贷不平衡，无法保存！');return;}
+  if(!voucherLines.some(l=>l.acct)){toast('请至少填写一个科目');return;}
+  const k=getVoucherSeqKey();
+  if(!S.voucherSeq[k]) S.voucherSeq[k]=1;
+  const v={id:Date.now()+'_'+Math.random().toString(36).slice(2),no:document.getElementById('v-no').value,type:document.getElementById('v-type').value,date:document.getElementById('v-date').value,attach:parseInt(document.getElementById('v-attach').value)||0,lines:voucherLines.filter(l=>l.acct||l.desc).map(l=>({...l})),totalDr:dr,totalCr:cr,maker:'管理员',status:'已记账',year:S.period.year,month:S.period.month};
+  S.vouchers.push(v); S.voucherSeq[k]++;
+  saveState(); toast('凭证保存成功：'+v.no);
+  initVoucher(); renderDashboard();
+}
+
+function renderVoucherList(){
+  const tbody=document.getElementById('vlist-tbody');
+  const vs=S.vouchers.filter(v=>v.year===S.period.year&&v.month===S.period.month);
+  if(!vs.length){tbody.innerHTML='<tr><td colspan="8" class="empty-state">本期暂无凭证</td></tr>';return;}
+  tbody.innerHTML=vs.map(v=>`
+    <tr>
+      <td style="font-family:var(--font-mono);font-size:11.5px">${v.no}</td>
+      <td style="color:var(--text3)">${v.date}</td>
+      <td>${v.lines[0]?.desc||'-'}</td>
+      <td class="text-right">${fmt(v.totalDr)}</td>
+      <td class="text-right">${fmt(v.totalCr)}</td>
+      <td style="color:var(--text3)">${v.maker}</td>
+      <td><span class="badge badge-success">${v.status}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm" onclick="viewVoucherDetail('${v.id}')">查看</button>
+        <button class="btn btn-sm btn-danger" style="margin-left:4px" onclick="deleteVoucher('${v.id}')">删除</button>
+      </td>
+    </tr>`).join('');
+}
+
+function deleteVoucher(id){
+  const v=S.vouchers.find(x=>x.id==id); if(!v) return;
+  if(!confirm(`确认删除凭证 ${v.no}？此操作不可恢复。`)) return;
+  S.vouchers=S.vouchers.filter(x=>x.id!=id); saveState();
+  toast('凭证已删除'); renderVoucherList(); renderDashboard();
+}
+
+function viewVoucherDetail(id){
+  const v=S.vouchers.find(x=>x.id==id); if(!v) return;
+  const rows=v.lines.map(l=>{
+    const an=S.accounts.find(a=>a.code===l.acct)?.name||'';
+    return `<tr><td>${l.desc||''}</td><td class="acct-code">${l.acct} ${an}</td><td class="text-right">${l.dr?fmt(l.dr):''}</td><td class="text-right">${l.cr?fmt(l.cr):''}</td></tr>`;
+  }).join('');
+  const html=`<div class="modal-bg" id="vdetail-modal" onclick="if(event.target===this)this.remove()">
+    <div class="modal">
+      <div class="modal-title"><span>凭证详情 — ${v.no}</span><button class="close-btn" onclick="document.getElementById('vdetail-modal').remove()">×</button></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12.5px;margin-bottom:16px;background:var(--bg3);border-radius:8px;padding:12px 14px;border:1px solid var(--border)">
+        <span style="color:var(--text3)">日期</span><span style="font-family:var(--font-mono)">${v.date}</span>
+        <span style="color:var(--text3)">制单</span><span>${v.maker}</span>
+        <span style="color:var(--text3)">附件</span><span>${v.attach}张</span>
+        <span style="color:var(--text3)">状态</span><span><span class="badge badge-success">${v.status}</span></span>
+      </div>
+      <table><thead><tr><th>摘要</th><th>科目</th><th class="text-right">借方</th><th class="text-right">贷方</th></tr></thead><tbody>${rows}</tbody>
+      <tfoot><tr style="font-weight:600;background:var(--bg3)"><td colspan="2" style="color:var(--text)">合计</td><td class="text-right" style="color:var(--accent);font-family:var(--font-mono)">${fmt(v.totalDr)}</td><td class="text-right" style="color:var(--accent);font-family:var(--font-mono)">${fmt(v.totalCr)}</td></tr></tfoot>
+      </table>
+    </div></div>`;
+  document.getElementById('app').insertAdjacentHTML('beforeend',html);
+}
+
+function renderAccounts(){
+  const tbody=document.getElementById('acct-tbody');
+  tbody.innerHTML=S.accounts.map(a=>`
+    <tr>
+      <td class="acct-code">${a.code}</td>
+      <td>${a.name}</td>
+      <td style="color:var(--text3)">${a.type}</td>
+      <td><span class="tag ${a.direction==='借'?'tag-dr':'tag-cr'}">${a.direction}方</span></td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteAccount('${a.code}')">删除</button></td>
+    </tr>`).join('');
+}
+
+function showAddAccountModal(){
+  const html=`<div class="modal-bg" id="acct-modal" onclick="if(event.target===this)this.remove()">
+    <div class="modal"><div class="modal-title"><span>新增科目</span><button class="close-btn" onclick="document.getElementById('acct-modal').remove()">×</button></div>
+    <div class="form-row cols2">
+      <div class="form-group"><label>科目编码</label><input id="new-code" placeholder="如：1003"></div>
+      <div class="form-group"><label>科目名称</label><input id="new-name" placeholder="如：现金等价物"></div>
+    </div>
+    <div class="form-row cols2">
+      <div class="form-group"><label>科目类别</label><select id="new-type"><option>资产</option><option>负债</option><option>所有者权益</option><option>成本</option><option>损益</option></select></div>
+      <div class="form-group"><label>余额方向</label><select id="new-dir"><option value="借">借方</option><option value="贷">贷方</option></select></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+      <button class="btn" onclick="document.getElementById('acct-modal').remove()">取消</button>
+      <button class="btn btn-primary" onclick="addAccount()">保存</button>
+    </div></div></div>`;
+  document.getElementById('app').insertAdjacentHTML('beforeend',html);
+}
+
+function addAccount(){
+  const code=document.getElementById('new-code').value.trim();
+  const name=document.getElementById('new-name').value.trim();
+  if(!code||!name){toast('请填写编码和名称');return;}
+  if(S.accounts.find(a=>a.code===code)){toast('科目编码已存在');return;}
+  S.accounts.push({code,name,type:document.getElementById('new-type').value,direction:document.getElementById('new-dir').value});
+  S.accounts.sort((a,b)=>a.code.localeCompare(b.code));
+  saveState(); document.getElementById('acct-modal').remove(); renderAccounts(); toast('科目添加成功');
+}
+
+function deleteAccount(code){
+  if(!confirm('确认删除该科目？')) return;
+  S.accounts=S.accounts.filter(a=>a.code!==code); saveState(); renderAccounts(); toast('科目已删除');
+}
+
+function getBalance(code,toYear,toMonth){
+  let dr=0,cr=0;
+  S.vouchers.filter(v=>{
+    if(toYear===undefined) return true;
+    if(v.year<toYear) return true;
+    if(v.year===toYear&&v.month<=toMonth) return true;
+    return false;
+  }).forEach(v=>v.lines.forEach(l=>{if(l.acct===code){dr+=parseFloat(l.dr)||0;cr+=parseFloat(l.cr)||0;}}));
+  const a=S.accounts.find(a=>a.code===code); if(!a) return 0;
+  return a.direction==='借'?dr-cr:cr-dr;
+}
+
+function getPeriodBalance(code,fromM,toM,year){
+  let dr=0,cr=0;
+  S.vouchers.filter(v=>v.year===year&&v.month>=fromM&&v.month<=toM)
+    .forEach(v=>v.lines.forEach(l=>{if(l.acct===code){dr+=parseFloat(l.dr)||0;cr+=parseFloat(l.cr)||0;}}));
+  const a=S.accounts.find(a=>a.code===code); if(!a) return 0;
+  return a.direction==='借'?dr-cr:cr-dr;
+}
+
+function renderCarryForward(){
+  const plCodes=S.standard==='gaap'?['6','5']:['4'];
+  const plAccts=S.accounts.filter(a=>plCodes.some(p=>a.code.startsWith(p)));
+  const profitCode=S.standard==='gaap'?'4103':'3103';
+  let html='<table><thead><tr><th>科目编码</th><th>科目名称</th><th>余额方向</th><th class="text-right">当期余额</th><th>结转说明</th></tr></thead><tbody>';
+  let hasData=false;
+  plAccts.forEach(a=>{
+    const bal=getPeriodBalance(a.code,S.period.month,S.period.month,S.period.year);
+    if(Math.abs(bal)>0.001){
+      hasData=true;
+      html+=`<tr><td class="acct-code">${a.code}</td><td>${a.name}</td>
+        <td><span class="tag ${a.direction==='借'?'tag-dr':'tag-cr'}">${a.direction}方</span></td>
+        <td class="text-right">${fmt(Math.abs(bal))}</td>
+        <td style="color:var(--text3);font-size:12px">→ 结转至 ${profitCode} 本年利润</td></tr>`;
+    }
+  });
+  html+='</tbody></table>';
+  document.getElementById('cf-items').innerHTML=hasData?html:'<p style="color:var(--text3);font-size:13px;padding:12px 0">本期无需结转的损益科目余额</p>';
+}
+
+function buildCFLines(){
+  const plCodes=S.standard==='gaap'?['6','5']:['4'];
+  const plAccts=S.accounts.filter(a=>plCodes.some(p=>a.code.startsWith(p)));
+  const profitCode=S.standard==='gaap'?'4103':'3103';
+  const lines=[];
+  plAccts.forEach(a=>{
+    const bal=getPeriodBalance(a.code,S.period.month,S.period.month,S.period.year);
+    if(Math.abs(bal)>0.001){
+      if(a.direction==='贷'){lines.push({desc:`结转${a.name}`,acct:a.code,dr:bal.toFixed(2),cr:''});lines.push({desc:`结转${a.name}`,acct:profitCode,dr:'',cr:bal.toFixed(2)});}
+      else{lines.push({desc:`结转${a.name}`,acct:profitCode,dr:bal.toFixed(2),cr:''});lines.push({desc:`结转${a.name}`,acct:a.code,dr:'',cr:bal.toFixed(2)});}
+    }
+  });
+  return lines;
+}
+
+function previewCarryForward(){
+  const lines=buildCFLines();
+  const el=document.getElementById('cf-preview-card'),tbody=document.getElementById('cf-preview-body');
+  if(!lines.length){el.style.display='none';toast('本期无损益余额，无需结转');return;}
+  const netProfit=lines.filter(l=>l.acct===(S.standard==='gaap'?'4103':'3103')).reduce((s,l)=>s+(parseFloat(l.cr)||0)-(parseFloat(l.dr)||0),0);
+  tbody.innerHTML=lines.map(l=>{const an=S.accounts.find(a=>a.code===l.acct)?.name||'';return `<tr><td>${l.desc}</td><td class="acct-code">${l.acct} ${an}</td><td class="text-right">${l.dr?fmt(l.dr):''}</td><td class="text-right">${l.cr?fmt(l.cr):''}</td></tr>`;}).join('')
+    +`<tr class="report-total"><td colspan="2">本期净利润</td><td class="text-right" colspan="2" style="color:var(--accent);font-family:var(--font-mono)">${fmt(netProfit)}</td></tr>`;
+  el.style.display='block';
+}
+
+function execCarryForward(){
+  const lines=buildCFLines();
+  if(!lines.length){toast('本期无损益余额，无需结转');return;}
+  previewCarryForward();
+  const totalDr=lines.reduce((s,l)=>s+(parseFloat(l.dr)||0),0);
+  const k=getVoucherSeqKey();
+  const v={id:Date.now()+'_cf',no:`转-${k}-结转`,type:'转',date:`${S.period.year}-${String(S.period.month).padStart(2,'0')}-31`,attach:0,lines,totalDr,totalCr:totalDr,maker:'系统自动',status:'已记账',year:S.period.year,month:S.period.month};
+  S.vouchers.push(v); saveState(); toast('结转完成，已生成凭证：'+v.no);
+}
+
+function renderBalanceSheet(){
+  const y=parseInt(document.getElementById('bs-year').value);
+  const pv=document.getElementById('bs-period').value;
+  let toM=12;
+  if(pv==='Q1')toM=3;else if(pv==='Q2')toM=6;else if(pv==='Q3')toM=9;else if(pv==='Q4')toM=12;else toM=parseInt(pv);
+  const co=document.getElementById('company-name')?.value||S.company;
+  const lastDay = new Date(y, toM, 0).getDate();
+  document.getElementById('bs-subtitle').textContent=`编制单位：${co}　${y}年${toM}月${lastDay}日　单位：元`;
+  const b=(code)=>getBalance(code,y,toM);
+  const bp=(code)=>getBalance(code,y-1,12);
+  let rows='';
+  if(S.standard==='gaap'){
+    const assetRows=[['流动资产：',null],['货币资金',[['1001','1002'],null]],['交易性金融资产',[['1101'],null]],['应收票据',[['1122'],null]],['应收账款',[['1123'],null]],['其他应收款',[['1221'],null]],['存货',[['1401','1405'],null]],['流动资产合计','SUM_CA'],['非流动资产：',null],['长期股权投资',[['1511'],null]],['固定资产净值',[['1601'],['-','1602']]],['无形资产',[['1701'],null]],['非流动资产合计','SUM_NCA'],['资产总计','SUM_TA']];
+    const liabRows=[['流动负债：',null],['短期借款',[['2001'],null]],['应付票据',[['2201'],null]],['应付账款',[['2202'],null]],['应付职工薪酬',[['2211'],null]],['应交税费',[['2221'],null]],['其他应付款',[['2241'],null]],['流动负债合计','SUM_CL'],['非流动负债：',null],['长期借款',[['2401'],null]],['非流动负债合计','SUM_NCL'],['负债合计','SUM_TL'],['所有者权益：',null],['实收资本',[['4001'],null]],['资本公积',[['4002'],null]],['盈余公积',[['4101'],null]],['本年利润',[['4103'],null]],['利润分配',[['4104'],null]],['所有者权益合计','SUM_OE'],['负债和所有者权益总计','SUM_TOT']];
+    function calcRow(spec){
+      if(spec===null||typeof spec==='string') return [null,null];
+      const [drCodes,crCodes]=spec;
+      let cur=drCodes.reduce((s,c)=>s+b(c),0),prev=drCodes.reduce((s,c)=>s+bp(c),0);
+      if(crCodes&&crCodes[0]==='-'){cur-=b(crCodes[1]);prev-=bp(crCodes[1]);}
+      return [cur,prev];
+    }
+    let ca=[0,0],nca=[0,0],cl=[0,0],ncl=[0,0],oe=[0,0];
+    const AITEMS=['货币资金','交易性金融资产','应收票据','应收账款','其他应收款','存货'];
+    const NCAITEMS=['长期股权投资','固定资产净值','无形资产'];
+    const CLITEMS=['短期借款','应付票据','应付账款','应付职工薪酬','应交税费','其他应付款'];
+    const NCLITEMS=['长期借款'];
+    const OEITEMS=['实收资本','资本公积','盈余公积','本年利润','利润分配'];
+    assetRows.forEach(([n,s])=>{const v=calcRow(s);if(v[0]!==null){if(AITEMS.includes(n)){ca[0]+=v[0];ca[1]+=v[1];}if(NCAITEMS.includes(n)){nca[0]+=v[0];nca[1]+=v[1];}}});
+    liabRows.forEach(([n,s])=>{const v=calcRow(s);if(v[0]!==null){if(CLITEMS.includes(n)){cl[0]+=v[0];cl[1]+=v[1];}if(NCLITEMS.includes(n)){ncl[0]+=v[0];ncl[1]+=v[1];}if(OEITEMS.includes(n)){oe[0]+=v[0];oe[1]+=v[1];}}});
+    const sums={SUM_CA:ca,SUM_NCA:nca,SUM_TA:[ca[0]+nca[0],ca[1]+nca[1]],SUM_CL:cl,SUM_NCL:ncl,SUM_TL:[cl[0]+ncl[0],cl[1]+ncl[1]],SUM_OE:oe,SUM_TOT:[cl[0]+ncl[0]+oe[0],cl[1]+ncl[1]+oe[1]]};
+    const maxLen=Math.max(assetRows.length,liabRows.length);
+    const section=['流动资产：','非流动资产：','流动负债：','非流动负债：','所有者权益：'];
+    const totals=['流动资产合计','非流动资产合计','资产总计','流动负债合计','非流动负债合计','负债合计','所有者权益合计','负债和所有者权益总计'];
+    for(let i=0;i<maxLen;i++){
+      const la=assetRows[i],lb=liabRows[i];
+      const [ln,ls]=la||['',''];const [rn,rs]=lb||['',''];
+      let lv=['',''],rv=['',''];
+      if(ls&&typeof ls==='string'&&sums[ls]){lv=sums[ls];}else if(ls){const r=calcRow(ls);lv=[r[0]===null?'':r[0],r[1]===null?'':r[1]];}
+      if(rs&&typeof rs==='string'&&sums[rs]){rv=sums[rs];}else if(rs){const r=calcRow(rs);rv=[r[0]===null?'':r[0],r[1]===null?'':r[1]];}
+      const isSec=section.includes(ln)||section.includes(rn);
+      const isTot=totals.includes(ln)||totals.includes(rn);
+      const cls=isSec?' class="report-section-header"':isTot?' class="report-total"':'';
+      rows+=`<tr${cls}><td>${ln||''}</td><td class="text-right">${lv[0]!==''?fmt(lv[0]):''}</td><td class="text-right">${lv[1]!==''?fmt(lv[1]):''}</td><td>${rn||''}</td><td class="text-right">${rv[0]!==''?fmt(rv[0]):''}</td><td class="text-right">${rv[1]!==''?fmt(rv[1]):''}</td></tr>`;
+    }
+  } else {
+    const items=[['货币资金',b('1001')+b('1002'),bp('1001')+bp('1002'),'短期借款',b('2001'),bp('2001')],['应收账款',b('1202'),bp('1202'),'应付账款',b('2201'),bp('2201')],['存货',b('1401'),bp('1401'),'应交税费',b('2251'),bp('2251')],['固定资产净值',b('1601')-b('1602'),bp('1601')-bp('1602'),'实收资本',b('3001'),bp('3001')],['无形资产',b('1701'),bp('1701'),'本年利润',b('3103'),bp('3103')]];
+    rows=`<tr class="report-section-header"><td colspan="6">小企业会计准则</td></tr>`;
+    items.forEach(r=>rows+=`<tr><td>${r[0]}</td><td class="text-right">${fmt(r[1])}</td><td class="text-right">${fmt(r[2])}</td><td>${r[3]}</td><td class="text-right">${fmt(r[4])}</td><td class="text-right">${fmt(r[5])}</td></tr>`);
+  }
+  document.getElementById('bs-tbody').innerHTML=rows;
+}
+
+function renderIncomeStmt(){
+  const y=parseInt(document.getElementById('is-year').value);
+  const pv=document.getElementById('is-period').value;
+  let fromM=1,toM=12;
+  if(pv==='Q1'){fromM=1;toM=3;}else if(pv==='Q2'){fromM=4;toM=6;}else if(pv==='Q3'){fromM=7;toM=9;}else if(pv==='Q4'){fromM=1;toM=12;}else{fromM=toM=parseInt(pv);}
+  const co=document.getElementById('company-name')?.value||S.company;
+  document.getElementById('is-subtitle').textContent=`编制单位：${co}　${y}年${pv}　单位：元`;
+  const p=(c)=>getPeriodBalance(c,fromM,toM,y);
+  const ytd=(c)=>getPeriodBalance(c,1,toM,y);
+  let rows='';
+  if(S.standard==='gaap'){
+    const rev=p('6001')+p('6002'),revY=ytd('6001')+ytd('6002');
+    const cst=p('6101')+p('6102'),cstY=ytd('6101')+ytd('6102');
+    const gp=rev-cst,gpY=revY-cstY;
+    const se=p('6401'),me=p('6402'),fe=p('6403');
+    const seY=ytd('6401'),meY=ytd('6402'),feY=ytd('6403');
+    const op=gp-se-me-fe+p('6201'),opY=gpY-seY-meY-feY+ytd('6201');
+    const tp=op+p('6301')-p('6501'),tpY=opY+ytd('6301')-ytd('6501');
+    const np=tp-p('6601'),npY=tpY-ytd('6601');
+    [[1,'一、营业收入',rev,revY],[2,'　减：营业成本',cst,cstY],[5,'　　　销售费用',se,seY],[6,'　　　管理费用',me,meY],[7,'　　　财务费用',fe,feY],[9,'　加：投资收益',p('6201'),ytd('6201')],[10,'二、营业利润',op,opY,true],[11,'　加：营业外收入',p('6301'),ytd('6301')],[12,'　减：营业外支出',p('6501'),ytd('6501')],[13,'三、利润总额',tp,tpY,true],[14,'　减：所得税费用',p('6601'),ytd('6601')],[15,'四、净利润',np,npY,true]].forEach(([no,name,cur,acc,tot])=>rows+=`<tr${tot?' class="report-total"':''}><td>${name}</td><td class="text-center">${no}</td><td class="text-right">${fmt(cur)}</td><td class="text-right">${fmt(acc)}</td></tr>`);
+  } else {
+    const rev=p('4001'),revY=ytd('4001');
+    const cog=p('4101'),cogY=ytd('4101');
+    const tax=p('4201'),taxY=ytd('4201');
+    const se=p('4301'),seY=ytd('4301'),me=p('4302'),meY=ytd('4302'),fe=p('4303'),feY=ytd('4303');
+    const op=rev-cog-tax-se-me-fe,opY=revY-cogY-taxY-seY-meY-feY;
+    const tp=op+p('4401')-p('4402'),tpY=opY+ytd('4401')-ytd('4402');
+    const np=tp-p('4601'),npY=tpY-ytd('4601');
+    [[1,'一、营业收入',rev,revY],[2,'　减：营业成本',cog,cogY],[3,'　　　营业税金及附加',tax,taxY],[4,'　　　销售费用',se,seY],[5,'　　　管理费用',me,meY],[6,'　　　财务费用',fe,feY],[7,'二、营业利润',op,opY,true],[8,'　加：营业外收入',p('4401'),ytd('4401')],[9,'　减：营业外支出',p('4402'),ytd('4402')],[10,'三、利润总额',tp,tpY,true],[11,'　减：所得税费用',p('4601'),ytd('4601')],[12,'四、净利润',np,npY,true]].forEach(([no,name,cur,acc,tot])=>rows+=`<tr${tot?' class="report-total"':''}><td>${name}</td><td class="text-center">${no}</td><td class="text-right">${fmt(cur)}</td><td class="text-right">${fmt(acc)}</td></tr>`);
+  }
+  document.getElementById('is-tbody').innerHTML=rows;
+}
+
+function renderCashFlow(){
+  const y=parseInt(document.getElementById('cfr-year').value);
+  const pv=document.getElementById('cfr-period').value;
+  let fromM=1,toM=12;
+  if(pv==='Q1'){fromM=1;toM=3;}else if(pv==='Q2'){fromM=4;toM=6;}else if(pv==='Q3'){fromM=7;toM=9;}else if(pv==='Q4'){fromM=1;toM=12;}else{fromM=toM=parseInt(pv);}
+  const co=document.getElementById('company-name')?.value||S.company;
+  document.getElementById('cfr-subtitle').textContent=`编制单位：${co}　${y}年${pv}　单位：元`;
+  const p=(c)=>getPeriodBalance(c,fromM,toM,y);
+  const pp=(c)=>getPeriodBalance(c,fromM,toM,y-1);
+  const rCode=S.standard==='gaap'?'6001':'4001';
+  const cCode=S.standard==='gaap'?'6101':'4101';
+  const mCode=S.standard==='gaap'?'6402':'4302';
+  const tCode=S.standard==='gaap'?'6601':'4601';
+  const sCode=S.standard==='gaap'?'6401':'4301';
+  const opIn=p(rCode)+(S.standard==='gaap'?p('6002'):0);
+  const opOut=p(cCode)+p(sCode)+p(mCode)+p(tCode);
+  const opNet=opIn-opOut;
+  const items=[
+    {s:'一、经营活动产生的现金流量'},
+    {n:'销售商品、提供劳务收到的现金',no:1,c:opIn,p:pp(rCode)},
+    {n:'支付给职工及为职工支付的现金',no:2,c:p(mCode),p:pp(mCode)},
+    {n:'支付的各项税费',no:3,c:p(tCode),p:pp(tCode)},
+    {n:'支付其他经营活动现金',no:4,c:p(sCode)+p(cCode),p:pp(sCode)+pp(cCode)},
+    {t:'经营活动现金流量净额',no:5,c:opNet,p:pp(rCode)-pp(cCode)-pp(sCode)-pp(mCode)-pp(tCode)},
+    {s:'二、投资活动产生的现金流量'},
+    {n:'收回投资收到的现金',no:6,c:0,p:0},{n:'购建固定资产支付的现金',no:7,c:0,p:0},
+    {t:'投资活动现金流量净额',no:8,c:0,p:0},
+    {s:'三、筹资活动产生的现金流量'},
+    {n:'取得借款收到的现金',no:9,c:0,p:0},{n:'偿还债务支付的现金',no:10,c:0,p:0},
+    {t:'筹资活动现金流量净额',no:11,c:0,p:0},
+    {t:'现金及现金等价物净增加额',no:12,c:opNet,p:0},
+  ];
+  document.getElementById('cfr-tbody').innerHTML=items.map(item=>{
+    if(item.s) return `<tr class="report-section-header"><td colspan="4">${item.s}</td></tr>`;
+    const cls=item.t?' class="report-total"':'';
+    const name=item.t||item.n;
+    return `<tr${cls}><td>${item.t?'':'\u3000'}${name}</td><td class="text-center">${item.no}</td><td class="text-right">${fmt(item.c)}</td><td class="text-right">${fmt(item.p)}</td></tr>`;
+  }).join('');
+}
+
+function switchRptTab(el,periodSelId,mode){
+  el.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const sel=document.getElementById(periodSelId);
+  if(mode==='month'){sel.innerHTML=Array.from({length:12},(_,i)=>`<option value="${i+1}" ${i+1===S.period.month?'selected':''}>${i+1}月</option>`).join('');}
+  else{sel.innerHTML='<option value="Q1">第一季度</option><option value="Q2">第二季度</option><option value="Q3">第三季度</option><option value="Q4" selected>第四季度</option>';}
+}
+
+function exportCSV(type){
+  let csv='',filename='';
+  if(type==='income-stmt'){filename='利润表.csv';csv='项目,行次,本期金额,本年累计\n';document.querySelectorAll('#is-tbody tr').forEach(tr=>{const cells=[...tr.querySelectorAll('td')].map(td=>'"'+td.textContent.trim()+'"');csv+=cells.join(',')+'\n';});}
+  else if(type==='balance-sheet'){filename='资产负债表.csv';csv='资产,期末余额,年初余额,负债和所有者权益,期末余额,年初余额\n';document.querySelectorAll('#bs-tbody tr').forEach(tr=>{const cells=[...tr.querySelectorAll('td')].map(td=>'"'+td.textContent.trim()+'"');csv+=cells.join(',')+'\n';});}
+  else{filename='现金流量表.csv';csv='项目,行次,本期金额,上期金额\n';document.querySelectorAll('#cfr-tbody tr').forEach(tr=>{const cells=[...tr.querySelectorAll('td')].map(td=>'"'+td.textContent.trim()+'"');csv+=cells.join(',')+'\n';});}
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);
+  toast('已导出：'+filename);
+}
+
+function changeStandard(){
+  S.standard=document.querySelector('input[name="std"]:checked').value;
+  document.getElementById('std-display').textContent=S.standard==='gaap'?'企业会计准则':'小企业会计准则';
+  if(!S.accounts||!S.accounts.length) initAccounts();
+}
+
+function saveSettings(){
+  S.company=document.getElementById('company-name').value||'示例企业';
+  S.taxNo=document.getElementById('tax-no').value||'';
+  S.standard=document.querySelector('input[name="std"]:checked').value;
+  document.getElementById('std-display').textContent=S.standard==='gaap'?'企业会计准则':'小企业会计准则';
+  saveState(); toast('设置已保存');
+}
+
+function clearAllData(){
+  if(!confirm('确认清空所有数据？此操作不可恢复！')) return;
+  try{localStorage.removeItem(SK);}catch(e){}
+  Object.assign(S,JSON.parse(JSON.stringify(DEFSTATE)));
+  initAccounts(); init(); toast('数据已清空');
+}
+
+function renderDashboard(){
+  const y=S.period.year,m=S.period.month;
+  const rCode=S.standard==='gaap'?'6001':'4001';
+  const cCode=S.standard==='gaap'?'6101':'4101';
+  const rev=getPeriodBalance(rCode,m,m,y)+(S.standard==='gaap'?getPeriodBalance('6002',m,m,y):0);
+  const exp=getPeriodBalance(cCode,m,m,y);
+  const profit=rev-exp;
+  const vs=S.vouchers.filter(v=>v.year===y&&v.month===m);
+  document.getElementById('dash-revenue').textContent=fmtMoney(rev);
+  document.getElementById('dash-expense').textContent=fmtMoney(exp);
+  document.getElementById('dash-profit').textContent=fmtMoney(profit);
+  document.getElementById('dash-profit').style.color=profit>=0?'var(--accent)':'var(--red)';
+  document.getElementById('dash-vouchers').textContent=vs.length;
+  const tbody=document.getElementById('dash-tbody');
+  if(!vs.length){tbody.innerHTML='<tr><td colspan="5" class="empty-state">本期暂无凭证</td></tr>';return;}
+  tbody.innerHTML=vs.slice(-5).reverse().map(v=>`<tr><td style="font-family:var(--font-mono);font-size:11.5px">${v.no}</td><td style="color:var(--text3)">${v.date}</td><td>${v.lines[0]?.desc||'-'}</td><td class="text-right">${fmt(v.totalDr)}</td><td><span class="badge badge-success">${v.status}</span></td></tr>`).join('');
+}
+
+function init(){
+  if(!S.fiscalYears||!S.fiscalYears.length) S.fiscalYears=[new Date().getFullYear()];
+  if(!S.period||!S.period.year){const now=new Date();S.period={year:now.getFullYear(),month:now.getMonth()+1};}
+  if(!S.voucherSeq) S.voucherSeq={};
+  if(!S.accounts||!S.accounts.length) initAccounts();
+  document.getElementById(S.standard==='gaap'?'std-gaap':'std-small').checked=true;
+  document.getElementById('std-display').textContent=S.standard==='gaap'?'企业会计准则':'小企业会计准则';
+  if(document.getElementById('company-name')) document.getElementById('company-name').value=S.company||'示例企业';
+  refreshAllYearSelects();
+  buildMonthOptions('current-month',S.period.month);
+  buildMonthOptions('bs-period',S.period.month);
+  buildMonthOptions('is-period',S.period.month);
+  buildMonthOptions('cfr-period',S.period.month);
+  document.getElementById('current-year').value=S.period.year;
+  renderDashboard();
+}
+
+async function startup(){ await trySaveStorage(); init(); }
+startup();
+
+// ─── EXPENSE COMPARE ───────────────────────────────────────────────
+let ecChart = null;
+let ecCurrentView = 'bar';
+
+function getExpenseCodes(){
+  if(S.standard==='gaap'){
+    return [
+      {code:'6101',name:'主营业务成本'},
+      {code:'6401',name:'销售费用'},
+      {code:'6402',name:'管理费用'},
+      {code:'6403',name:'财务费用'},
+      {code:'6501',name:'营业外支出'},
+      {code:'6601',name:'所得税费用'},
+    ];
+  } else {
+    return [
+      {code:'4101',name:'营业成本'},
+      {code:'4301',name:'销售费用'},
+      {code:'4302',name:'管理费用'},
+      {code:'4303',name:'财务费用'},
+      {code:'4402',name:'营业外支出'},
+      {code:'4601',name:'所得税费用'},
+    ];
+  }
+}
+
+function initExpenseCompare(){
+  buildYearOptions('ec-year', S.period.year);
+  renderExpenseCompare();
+}
+
+function setEcView(mode){
+  ecCurrentView = mode;
+  document.getElementById('ec-view-bar').style.cssText = mode==='bar'
+    ? 'background:var(--accent);color:#fff;border-color:transparent;padding:5px 10px;font-size:11.5px;border-radius:6px;border:none;cursor:pointer;font-family:var(--font)'
+    : 'background:var(--bg3);color:var(--text2);border:1px solid var(--border2);padding:5px 10px;font-size:11.5px;border-radius:6px;cursor:pointer;font-family:var(--font)';
+  document.getElementById('ec-view-line').style.cssText = mode==='line'
+    ? 'background:var(--accent);color:#fff;border-color:transparent;padding:5px 10px;font-size:11.5px;border-radius:6px;border:none;cursor:pointer;font-family:var(--font)'
+    : 'background:var(--bg3);color:var(--text2);border:1px solid var(--border2);padding:5px 10px;font-size:11.5px;border-radius:6px;cursor:pointer;font-family:var(--font)';
+  renderExpenseCompare();
+}
+
+function renderExpenseCompare(){
+  const y = parseInt(document.getElementById('ec-year').value) || S.period.year;
+  const codes = getExpenseCodes();
+  const months = Array.from({length:12},(_,i)=>i+1);
+
+  // Build data matrix: codes x months
+  const matrix = codes.map(c=>({
+    ...c,
+    vals: months.map(m=>getPeriodBalance(c.code,m,m,y))
+  }));
+
+  // KPI: totals per expense category (full year)
+  const kpiData = codes.map(c=>({
+    name: c.name,
+    total: months.reduce((s,m)=>s+getPeriodBalance(c.code,m,m,y),0)
+  })).sort((a,b)=>b.total-a.total).slice(0,4);
+
+  const kpiColors = ['--blue','--amber','--red','--purple'];
+  document.getElementById('ec-kpi-row').innerHTML = kpiData.map((k,i)=>`
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(${kpiColors[i]})"></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">${k.name}</div>
+      <div style="font-size:18px;font-weight:600;color:var(${kpiColors[i]});font-family:var(--font-mono)">${k.total>0?'¥'+Number(k.total).toLocaleString('zh-CN',{maximumFractionDigits:0}):'—'}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:4px">全年合计</div>
+    </div>`).join('');
+
+  // Chart
+  document.getElementById('ec-chart-title').textContent = `各月费用趋势（${ecCurrentView==='bar'?'柱状图':'折线图'}）— ${y}年`;
+
+  const CHART_COLORS = [
+    'rgba(37,99,235,0.85)',
+    'rgba(217,119,6,0.85)',
+    'rgba(220,38,38,0.85)',
+    'rgba(124,58,237,0.85)',
+    'rgba(10,124,92,0.85)',
+    'rgba(156,163,175,0.85)',
+  ];
+  const CHART_BORDERS = [
+    'rgb(37,99,235)',
+    'rgb(217,119,6)',
+    'rgb(220,38,38)',
+    'rgb(124,58,237)',
+    'rgb(10,124,92)',
+    'rgb(107,114,128)',
+  ];
+
+  if(ecChart){ ecChart.destroy(); ecChart=null; }
+  const ctx = document.getElementById('ec-chart').getContext('2d');
+
+  if(ecCurrentView==='bar'){
+    ecChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: months.map(m=>m+'月'),
+        datasets: matrix.map((c,i)=>({
+          label: c.name,
+          data: c.vals,
+          backgroundColor: CHART_COLORS[i%CHART_COLORS.length],
+          borderRadius: 3,
+          borderSkipped: false,
+        }))
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position:'bottom', labels:{ boxWidth:10, padding:14, font:{size:11,family:'Noto Sans SC'}, color:'#4b5368' } },
+          tooltip: { callbacks:{ label: ctx=>`${ctx.dataset.label}: ¥${Number(ctx.raw).toLocaleString('zh-CN',{maximumFractionDigits:2})}` } }
+        },
+        scales: {
+          x: { stacked:false, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{size:11},color:'#8b93a8'} },
+          y: { grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:11},color:'#8b93a8', callback:v=>'¥'+Number(v).toLocaleString('zh-CN',{maximumFractionDigits:0})} }
+        }
+      }
+    });
+  } else {
+    ecChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: months.map(m=>m+'月'),
+        datasets: matrix.map((c,i)=>({
+          label: c.name,
+          data: c.vals,
+          borderColor: CHART_BORDERS[i%CHART_BORDERS.length],
+          backgroundColor: CHART_COLORS[i%CHART_COLORS.length].replace('0.85','0.08'),
+          borderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          tension: 0.35,
+          fill: false,
+        }))
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position:'bottom', labels:{ boxWidth:10, padding:14, font:{size:11,family:'Noto Sans SC'}, color:'#4b5368' } },
+          tooltip: { callbacks:{ label: ctx=>`${ctx.dataset.label}: ¥${Number(ctx.raw).toLocaleString('zh-CN',{maximumFractionDigits:2})}` } }
+        },
+        scales: {
+          x: { grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{size:11},color:'#8b93a8'} },
+          y: { grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:11},color:'#8b93a8', callback:v=>'¥'+Number(v).toLocaleString('zh-CN',{maximumFractionDigits:0})} }
+        }
+      }
+    });
+  }
+
+  // Table
+  const thead = document.getElementById('ec-thead');
+  const tbody = document.getElementById('ec-tbody');
+  const tfoot = document.getElementById('ec-tfoot');
+
+  thead.innerHTML = `<tr>
+    <th style="min-width:110px">费用科目</th>
+    ${months.map(m=>`<th class="text-right">${m}月</th>`).join('')}
+    <th class="text-right" style="background:rgba(10,124,92,0.06);color:var(--accent)">全年合计</th>
+  </tr>`;
+
+  // Month totals across all categories
+  const monthTotals = months.map(m=>matrix.reduce((s,c)=>s+c.vals[m-1],0));
+  const grandTotal = monthTotals.reduce((s,v)=>s+v,0);
+
+  // Month-over-month change for color coding cells
+  tbody.innerHTML = matrix.map((c,ci)=>{
+    const yearTotal = c.vals.reduce((s,v)=>s+v,0);
+    const cells = c.vals.map((v,mi)=>{
+      const prev = mi>0?c.vals[mi-1]:null;
+      let indicator='';
+      if(prev!==null&&prev>0){
+        const chg=((v-prev)/prev*100);
+        const color=chg>10?'var(--red)':chg>0?'var(--amber)':chg<0?'var(--accent)':'var(--text3)';
+        const arrow=chg>0?'↑':'↓';
+        indicator=`<span style="font-size:9px;color:${color};margin-left:3px">${arrow}${Math.abs(chg).toFixed(0)}%</span>`;
+      }
+      return `<td class="text-right" style="font-family:var(--font-mono);font-size:12px">${v>0?fmt(v):'—'}${indicator}</td>`;
+    }).join('');
+    return `<tr>
+      <td style="font-weight:500;white-space:nowrap">${c.name}</td>
+      ${cells}
+      <td class="text-right" style="font-family:var(--font-mono);font-weight:600;color:var(--accent);background:rgba(10,124,92,0.04)">${yearTotal>0?fmt(yearTotal):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  tfoot.innerHTML = `<tr style="background:var(--bg3);font-weight:600">
+    <td style="color:var(--text)">月度合计</td>
+    ${monthTotals.map(v=>`<td class="text-right" style="font-family:var(--font-mono);color:var(--text)">${v>0?fmt(v):'—'}</td>`).join('')}
+    <td class="text-right" style="font-family:var(--font-mono);color:var(--accent);background:rgba(10,124,92,0.06)">${grandTotal>0?fmt(grandTotal):'—'}</td>
+  </tr>`;
+}
+</script>
+</body>
+</html>
